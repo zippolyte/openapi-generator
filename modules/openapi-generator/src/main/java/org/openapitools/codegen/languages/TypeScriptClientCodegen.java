@@ -1247,8 +1247,6 @@ public class TypeScriptClientCodegen extends DefaultCodegen implements CodegenCo
             String exampleForObjectModel = exampleForObjectModel(schema, fullPrefix, closeChars, null, indentationLevel, exampleLine, closingIndentation, newSeenSchemas);
             return exampleForObjectModel;
         } else if (ModelUtils.isComposedSchema(schema)) {
-            // TODO add examples for composed schema models without discriminators
-
             CodegenDiscriminator disc = createDiscriminator(modelName, schema, openAPI);
             if (disc != null) {
                 MappedModel mm = getDiscriminatorMappedModel(disc);
@@ -1259,7 +1257,7 @@ public class TypeScriptClientCodegen extends DefaultCodegen implements CodegenCo
                     CodegenProperty cp = new CodegenProperty();
                     cp.setName(disc.getPropertyName());
                     cp.setExample(discPropNameValue);
-                    // Adds schema to seenSchemas before running example model function. romoves schema after running
+                    // Adds schema to seenSchemas before running example model function. removes schema after running
                     // the function. It also doesnt keep track of any schemas within the ObjectModel.
                     Set<Schema> newSeenSchemas = new HashSet<>(seenSchemas);
                     newSeenSchemas.add(schema);
@@ -1267,6 +1265,12 @@ public class TypeScriptClientCodegen extends DefaultCodegen implements CodegenCo
                     return exampleForObjectModel;
                 } else {
                     return fullPrefix + closeChars;
+                }
+            } else {
+                ComposedSchema cm = (ComposedSchema)schema;
+                List<Schema> ls = cm.getOneOf();
+                if (!ls.isEmpty()) {
+                    return fullPrefix + toExampleValue(ls.get(0)) + closeChars;
                 }
             }
             return fullPrefix + closeChars;
